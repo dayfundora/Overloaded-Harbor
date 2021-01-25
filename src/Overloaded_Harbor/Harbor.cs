@@ -41,5 +41,40 @@ namespace Overloaded_Harbor
             double d = Distribution.Exponential(random, 0.125);
             return d * 60 * 60;
         }
+
+
+        private double GenerateLoadedTugboatToDockTransfer()
+        {
+            double d = Distribution.Exponential(random, 0.5);
+            return d * 60 * 60;
+        }
+
+
+        private double GenerateLoadedTugboatToHarborTransfer(ShipType shipType)
+        {
+            double d = Distribution.Exponential(random, 1);
+            return d * 60 * 60;
+        }
+
+        private double GenerateLoadDelay(ShipType shipType)
+        {
+            double d = 0;
+            switch (shipType)
+            {
+                case ShipType.Small:
+                    d = Distribution.Normal(random, 9, 1);
+                    break;
+                case ShipType.Medium:
+                    d = Distribution.Normal(random, 12, 2);
+                    break;
+                case ShipType.Large:
+                    d = Distribution.Normal(random, 18, 3);
+                    break;
+                default:
+                    break;
+            }
+            return d * 60 * 60;
+        }
+
     }
 }
