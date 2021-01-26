@@ -76,5 +76,32 @@ namespace Overloaded_Harbor
             return d * 60 * 60;
         }
 
+        private Dock GetFreeDock()
+        {
+            foreach (var m in docks)
+                if (m.Ship == null)
+                    return m;
+            return null;
+        }
+
+        private void TakeShipToDock(Ship barco, Dock muelle)
+        {
+            barco.EntranceToHarbor = time;
+            time += GenerateLoadedTugboatToDockTransfer();
+            barco.ArrivalToDock = time;
+            double tCarga = time + GenerateLoadDelay(barco.Type);
+            barco.LoadEnd = muelle.LoadEnd = tCarga;
+            muelle.Ship = barco;
+            tugboatInDock = true;
+        }
+
+        private void TakeShipFromHarbor(Dock muelleALiberar)
+        {
+            muelleALiberar.Ship.ExitFromDock = time;
+            time += GenerateLoadedTugboatToHarborTransfer(muelleALiberar.Ship.Type);
+            tugboatInDock = false;
+            muelleALiberar.Ship.HarborExit = time;
+            shipsAttended.Enqueue(muelleALiberar.Ship);
+        }
     }
 }
