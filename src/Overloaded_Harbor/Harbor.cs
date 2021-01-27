@@ -36,10 +36,40 @@ namespace Overloaded_Harbor
                 docks[i] = new Dock();
         }
 
+        private Dock nextDockToFree()
+        {
+            Dock freeDock = null;
+            double smaller = double.MaxValue;
+            foreach (var m in docks)
+                if (m.Ship != null && m.LoadEnd < smaller)
+                {
+                    smaller = m.LoadEnd;
+                    freeDock = m;
+                }
+            return freeDock;
+        }
+
+        private ShipType GenerateShipType(Random r)
+        {
+            int valor = r.Next(4);
+            if (valor == 0)
+                return ShipType.Small;
+            else if (valor == 1)
+                return ShipType.Medium;
+            else
+                return ShipType.Large;
+        }
+
         private double GenerateArrivalHarbor()
         {
             double d = Distribution.Exponential(random, 0.125);
             return d * 60 * 60;
+        }
+
+        private double GenerateFreeDockTransfer()
+        {
+            double d = Distribution.Exponential(random, 0.6666666);
+            return d * 60;
         }
 
 
