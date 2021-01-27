@@ -23,6 +23,66 @@ namespace Overloaded_Harbor
 
         public int DocksCount { get; set; }
 
+        public Tuple<double, double, Queue<Ship>> StartSimulation(double duration)
+        {
+            double waitAverage = 0;
+            double waitAverageDock = 0;
+            if (DocksCount > 0)
+            {
+                duration = duration * 60 * 60;
+                InitializeSistem();
+                while (time < duration)
+                {
+                    Dock dockToFree = nextDockToFree();
+                    if ((dockToFree == null || arrival <= dockToFree.LoadEnd))
+                    {
+                        if (arrival >= duration)
+                            break;
+
+                        time = Math.Max(time, arrival);
+                        ShipType shipType = GenerateShipType(random);
+                        Ship newShip = new Ship(shipType, arrival);
+                        Dock freeDock = GetFreeDock();
+                        bool existFreeDock = freeDock != null;
+                        if (existFreeDock)
+                        {
+                            if (tugboatInDock)
+                                time += GenerateFreeDockTransfer();
+                            TakeShipToDock(newShip, freeDock);
+                        }
+                        else
+                            shipsInHold.Enqueue(newShip);
+                        arrival += GenerateArrivalHarbor();
+                    }
+                    else if (dockToFree != null && dockToFree.LoadEnd < arrival)
+                    {
+                        if (dockToFree.LoadEnd >= duration)
+                            break;
+
+                        time = Math.Max(time, dockToFree.LoadEnd);
+                        if (!tugboatInDock)
+                            time += GenerateFreeDockTransfer();
+
+                        TakeShipFromHarbor(dockToFree);
+
+                        waitAverage += (dockToFree.Ship.EntranceToHarbor - dockToFree.Ship.ArraivalToHarbor + dockToFree.Ship.ExitFromDock - dockToFree.Ship.LoadEnd);
+                        waitAverageDock += (dockToFree.Ship.ExitFromDock - dockToFree.Ship.ArrivalToDock);
+                        dockToFree.Ship = null;
+
+                        if (shipsInHold.Count > 0)
+                        {
+                            Ship shipToEnter = shipsInHold.Dequeue();
+                            TakeShipToDock(shipToEnter, dockToFree);
+                        }
+                    }
+                }
+                waitAverage = waitAverage / (double)shipsAttended.Count / 60 / 60;
+                waitAverageDock = waitAverageDock / (double)shipsAttended.Count / 60 / 60;
+            }
+
+            return new Tuple<double, double, Queue<Ship>>(waitAverage, waitAverageDock, shipsAttended);
+        }
+
         private void InitializeSistem()
         {
             random = new Random();
