@@ -12,17 +12,27 @@ namespace Overloaded_Harbor
     {
         static void Main(string[] args)
         {
+            for (int i = 0; i < 10; i++)
+            {
 
                 Tuple<double, double, Queue<Ship>> datos;
-                int hours = 480;
-                Harbor harbor = new Harbor();
-                datos = harbor.StartSimulation(hours);
+                using (StreamReader sr = new StreamReader("in.txt"))
+                {
+                    var time = long.Parse(sr.ReadLine());
+                    Harbor harbor = new Harbor();
+                    datos = harbor.StartSimulation(time);
+                }
 
-                Console.WriteLine("Average Wait in Harbor: " + datos.Item1);
-                Console.WriteLine("Average Wait in Dock: " + datos.Item2);
+                using (StreamWriter sw = new StreamWriter("out" + i + ".txt"))
+                {
+                    sw.WriteLine("Average Wait in Harbor: " + datos.Item1);
+                    sw.WriteLine("Average Wait in Dock: " + datos.Item2);
 
-                foreach (var item in datos.Item3)
-                    Console.WriteLine(item.Type + "    " + item.WaitTime + "    " + item.LoadTime);
+                    foreach (var item in datos.Item3)
+                        sw.WriteLine(item.Type + "    " + item.WaitTime + "    " + item.LoadTime);
+                }
+                Process.Start("out" + i + ".txt");
+            }
         }
     }
 }
